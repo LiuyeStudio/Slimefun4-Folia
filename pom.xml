@@ -1,0 +1,503 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.github.slimefun</groupId>
+    <artifactId>Slimefun</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+
+    <name>Slimefun4-Folia</name>
+    <description>Slimefun 4 for Folia - a Paper/Folia compatible fork of Slimefun4, maintained by LiuyeStudio.</description>
+    <url>https://github.com/LiuyeStudio/Slimefun4-Folia</url>
+
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>nukebean</id>
+            <name>NukeBean</name>
+            <url>https://github.com/nukebean</url>
+        </developer>
+        <developer>
+            <id>liuyestudio</id>
+            <name>LiuyeStudio</name>
+            <url>https://github.com/LiuyeStudio</url>
+        </developer>
+    </developers>
+
+    <properties>
+        <revision>Folia</revision>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.release>21</maven.compiler.release>
+
+        <paper.version>1.21.11-R0.1-SNAPSHOT</paper.version>
+        <lombok.version>1.18.44</lombok.version>
+        <junit.version>5.12.2</junit.version>
+        <junitPlatform.version>1.12.2</junitPlatform.version>
+        <mockbukkit.version>4.110.0</mockbukkit.version>
+        <sqlite.version>3.53.2.0</sqlite.version>
+    </properties>
+
+    <repositories>
+        <!-- ===== JitPack：所有 com.github.* 依赖都在这里，必须放第一 ===== -->
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+
+        <!-- ===== Mojang：authlib ===== -->
+        <repository>
+            <id>minecraft</id>
+            <url>https://libraries.minecraft.net</url>
+        </repository>
+
+        <!-- ===== Paper API ===== -->
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+
+        <!-- ===== CodeMC：mockbukkit、orebfuscator 等 ===== -->
+        <repository>
+            <id>codemc</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+        </repository>
+
+        <!-- ===== EngineHub：WorldEdit ===== -->
+        <repository>
+            <id>enginehub</id>
+            <url>https://maven.enginehub.org/repo/</url>
+        </repository>
+
+        <!-- ===== PlaceholderAPI ===== -->
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi</url>
+        </repository>
+
+        <!-- ===== Spigot ===== -->
+        <repository>
+            <id>spigot</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots</url>
+        </repository>
+
+        <!-- ===== norain / guizhanlib ===== -->
+        <repository>
+            <id>norain-releases</id>
+            <url>https://maven.norain.city/releases</url>
+        </repository>
+        <repository>
+            <id>norain-snapshots</id>
+            <url>https://maven.norain.city/snapshots</url>
+        </repository>
+
+        <!-- ===== 冷门源放最后 ===== -->
+        <repository>
+            <id>neetgames</id>
+            <url>https://nexus.neetgames.com/repository/maven-public</url>
+        </repository>
+        <repository>
+            <id>walshy</id>
+            <url>https://repo.walshy.dev/public</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <!-- ===== Provided by the server ===== -->
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>${paper.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>3.0.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.24.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- ===== Shaded / runtime dependencies ===== -->
+        <dependency>
+            <groupId>io.github.baked-libs</groupId>
+            <artifactId>dough-api</artifactId>
+            <version>1.3.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.konghq</groupId>
+            <artifactId>unirest-java</artifactId>
+            <version>3.14.5</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.code.gson</groupId>
+                    <artifactId>gson</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>5.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.7</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.Xzavier0722</groupId>
+            <artifactId>SlimefunCompLib</artifactId>
+            <version>b7a2bd8</version>
+        </dependency>
+        <dependency>
+            <groupId>net.guizhanss</groupId>
+            <artifactId>guizhanlib-updater</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.guizhanss</groupId>
+            <artifactId>guizhanlib-minecraft</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
+        <!-- ===== Soft dependencies (compile-only) ===== -->
+        <dependency>
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-core</artifactId>
+            <version>7.3.6</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-bukkit</artifactId>
+            <version>7.3.6</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.gmail.nossr50.mcMMO</groupId>
+            <artifactId>mcMMO</artifactId>
+            <version>2.1.225</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.6</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>me.minebuilders</groupId>
+            <artifactId>clearlag-core</artifactId>
+            <version>3.1.6</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.LoneDev6</groupId>
+            <artifactId>itemsadder-api</artifactId>
+            <version>3.6.1</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>net.imprex</groupId>
+            <artifactId>orebfuscator-api</artifactId>
+            <version>5.3.0</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7.1</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>authlib</artifactId>
+            <version>6.0.52</version>
+            <scope>provided</scope>
+            <exclusions><exclusion><groupId>*</groupId><artifactId>*</artifactId></exclusion></exclusions>
+        </dependency>
+
+        <!-- ===== Test dependencies ===== -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>${junitPlatform.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockbukkit.mockbukkit</groupId>
+            <artifactId>mockbukkit-v1.21</artifactId>
+            <version>${mockbukkit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>${sqlite.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <!-- 发布目标: SNAPSHOT 走 snapshots, 正式版走 releases。凭据放在 ~/.m2/settings.xml 中
+         id 为 norain-releases / norain-snapshots 的 server 里。 -->
+    <distributionManagement>
+        <repository>
+            <id>norain-releases</id>
+            <name>norain releases</name>
+            <url>https://maven.norain.city/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>norain-snapshots</id>
+            <name>norain snapshots</name>
+            <url>https://maven.norain.city/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <build>
+        <finalName>Slimefun-${revision}</finalName>
+
+        <resources>
+            <!-- Only plugin.yml is filtered so its `${revision}` placeholder
+                 gets substituted with the current build version. -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>plugin.yml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>plugin.yml</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <!-- 显式固定默认生命周期插件的版本, 避免依赖 Maven 版本自带的默认值
+                 (不同 Maven 版本默认值不同, 可能导致离线构建或可复现性差异)。 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.3.1</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.4.0</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.4</version>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>21</release>
+                    <encoding>UTF-8</encoding>
+                    <!-- 与旧 Gradle 构建保持一致: 不编译 package-info.java -->
+                    <excludes>
+                        <exclude>**/package-info.java</exclude>
+                    </excludes>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+                <configuration>
+                    <argLine>-Dfile.encoding=UTF-8</argLine>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- 生成 target/classes/git.properties, 供 EnvUtil 读取构建时间/提交号/分支。
+                 没有 .git 目录时(例如源码压缩包)只跳过生成, 不中断构建。 -->
+            <plugin>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>9.0.1</version>
+                <executions>
+                    <execution>
+                        <id>generate-git-properties</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git\.build\.(time|version)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git\.commit\.id(\.abbrev|\.full)?$</includeOnlyProperty>
+                        <includeOnlyProperty>^git\.branch$</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <dateFormat>yyyy-MM-dd HH:mm:ss</dateFormat>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <minimizeJar>false</minimizeJar>
+                            <relocations>
+                                <relocation>
+                                    <pattern>io.github.bakedlibs.dough</pattern>
+                                    <shadedPattern>io.github.thebusybiscuit.slimefun4.libraries.dough</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>io.papermc.lib</pattern>
+                                    <shadedPattern>io.github.thebusybiscuit.slimefun4.libraries.paperlib</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>kong.unirest</pattern>
+                                    <shadedPattern>io.github.thebusybiscuit.slimefun4.libraries.unirest</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache.commons.lang</pattern>
+                                    <shadedPattern>io.github.thebusybiscuit.slimefun4.libraries.commons.lang</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>net.guizhanss.guizhanlib</pattern>
+                                    <shadedPattern>io.github.thebusybiscuit.slimefun4.libraries.guizhanlib</shadedPattern>
+                                </relocation>
+                                <!--
+                                    Shaded libraries must not leak their original package names onto the
+                                    server classpath, otherwise other plugins (e.g. LibertyBans) detect
+                                    duplicate/conflicting copies and warn about server stability.
+                                -->
+                                <relocation>
+                                    <pattern>com.zaxxer.hikari</pattern>
+                                    <shadedPattern>io.github.thebusybiscuit.slimefun4.libraries.hikari</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.postgresql</pattern>
+                                    <shadedPattern>io.github.thebusybiscuit.slimefun4.libraries.postgresql</shadedPattern>
+                                </relocation>
+                            </relocations>
+                            <transformers>
+                                <!-- Keeps META-INF/services entries (java.sql.Driver) in sync with relocations -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>META-INF/MANIFEST.MF</exclude>
+                                        <exclude>module-info.class</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.44.0</version>
+                <configuration>
+                    <java>
+                        <palantirJavaFormat>
+                            <version>2.90.0</version>
+                            <style>PALANTIR</style>
+                        </palantirJavaFormat>
+                        <removeUnusedImports/>
+                        <formatAnnotations/>
+                    </java>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

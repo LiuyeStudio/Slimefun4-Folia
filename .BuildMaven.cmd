@@ -1,0 +1,1 @@
+D:\Soft\Aapache-maven-3.9.9\bin\mvn clean package
