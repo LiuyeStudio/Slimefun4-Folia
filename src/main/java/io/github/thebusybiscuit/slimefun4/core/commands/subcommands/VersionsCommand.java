@@ -92,9 +92,10 @@ class VersionsCommand extends SubCommand {
             addJavaVersion(builder);
 
             // Declare that we are NOT OFFICIAL build so no support from upstream
-            builder.append(Component.text("\n由 StarWishsama 汉化", Style.style(NamedTextColor.WHITE)))
+            builder.append(Component.text("\n由流叶科技工作室 (LiuyeStudio) 维护", Style.style(NamedTextColor.WHITE)))
                     .append(Component.text(
-                            "\n请不要将此版本信息截图到 Discord/Github 反馈 Bug\n优先到汉化页面反馈\n", Style.style(NamedTextColor.RED)));
+                            "\n请不要将此版本信息截图到 Discord/Github 反馈 Bug\n优先到本仓库的 Issues 页面反馈\n",
+                            Style.style(NamedTextColor.RED)));
 
             if (Slimefun.getConfigManager().isBypassEnvironmentCheck()) {
                 builder.append(Component.text("\n\n已禁用环境兼容性检查", Style.style(NamedTextColor.RED)));

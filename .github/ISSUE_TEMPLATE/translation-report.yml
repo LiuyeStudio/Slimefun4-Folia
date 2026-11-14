@@ -1,7 +1,7 @@
-name: 汉化反馈
-description: 反馈 Slimefun 4 汉化版的汉化问题
+name: 翻译反馈
+description: 反馈 Slimefun4-Folia 的翻译问题
 labels:
-- "📜 Translation | 汉化问题"
+- "📜 Translation | 翻译问题"
 
 body:
 - type: markdown
@@ -18,7 +18,7 @@ body:
 - type: textarea
   id: issue-description
   attributes:
-    label: 汉化问题描述
+    label: 翻译问题描述
     description: 在此详细描述你遇到的问题
   validations:
     required: true
@@ -26,8 +26,8 @@ body:
 - type: textarea
   id: reproduce
   attributes:
-    label: 汉化错误/缺失的位置
-    description: 在这里简略说明汉化错误/缺失的位置
+    label: 翻译错误/缺失的位置
+    description: 在这里简略说明翻译错误/缺失的位置
   validations:
     required: true
 

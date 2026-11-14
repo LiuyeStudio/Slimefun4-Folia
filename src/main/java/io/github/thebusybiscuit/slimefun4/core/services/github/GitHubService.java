@@ -123,7 +123,7 @@ public class GitHubService {
         this.logging = logging;
         addDefaultContributors();
 
-        // TheBusyBiscuit/Slimefun4 (multiple times because there may me multiple pages)
+        // LiuyeStudio/Slimefun4-Folia (multiple times because there may me multiple pages)
         connectors.add(new ContributionsConnector(this, "code", 1, repository, ContributorRole.DEVELOPER));
         connectors.add(new ContributionsConnector(this, "code2", 2, repository, ContributorRole.DEVELOPER));
         connectors.add(new ContributionsConnector(this, "code3", 3, repository, ContributorRole.DEVELOPER));

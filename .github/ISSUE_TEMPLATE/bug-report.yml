@@ -54,7 +54,7 @@ body:
       label: 服务端类型
       description: |
         选择你正在使用的服务端，如 `Paper`
-        注意：汉化版仓库不对**混合端** (例如 Arclight、CatServer 这类支持插件与 Mod 并存的服务端) 做任何支持，请自己设法解决
+        注意：本仓库不对**混合端** (例如 Arclight、CatServer 这类支持插件与 Mod 并存的服务端) 做任何支持，请自己设法解决
       options:
         - Paper
         - Leaves
