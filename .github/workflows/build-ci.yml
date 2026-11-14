@@ -47,8 +47,8 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: exp
-          name: Slimefun4-Folia 预览构建
-          body: 由 main 分支最新提交自动构建的预览版本。
+          name: Slimefun4-Folia Preview Build
+          body: Automatically built from the latest commit on the main branch.
           token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
           make_latest: false
