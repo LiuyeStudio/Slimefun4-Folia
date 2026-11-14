@@ -1,6 +1,6 @@
-# This workflow will build a Java project with Maven
+# This workflow builds the plugin with Maven and publishes a preview release.
 
-name: Slimefun Beta Builder
+name: Slimefun4-Folia Preview Builder
 
 on:
   workflow_call:
@@ -29,7 +29,7 @@ jobs:
           cache: maven
       - name: Codestyle Check
         run: mvn -B -ntp spotless:check
-      - name: Build Slimefun
+      - name: Build Slimefun4-Folia
         run: mvn -B -ntp clean package
       - name: Get build artifact filename
         run: |
@@ -38,17 +38,19 @@ jobs:
           [ "$(printf "%s\n" "$FILENAME" | wc -l)" -eq 1 ]
           echo "SLIMEFUN_ARTIFACT_NAME=$FILENAME" >> "$GITHUB_ENV"
       - uses: actions/upload-artifact@v7
-        name: Upload Beta artifact
+        name: Upload build artifact
         with:
-          name: Slimefun Beta Build
+          name: Slimefun4-Folia Build
           path: target/${{ env.SLIMEFUN_ARTIFACT_NAME }}
-      - name: Automatic Releases
-        uses: marvinpinto/action-automatic-releases@v1.2.1
-        if: github.ref_name == 'master'
+      - name: Publish preview release
+        if: github.ref_name == 'main'
+        uses: softprops/action-gh-release@v3
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          automatic_release_tag: "exp"
+          tag_name: exp
+          name: Slimefun4-Folia 预览构建
+          body: 由 main 分支最新提交自动构建的预览版本。
+          token: ${{ secrets.GITHUB_TOKEN }}
           prerelease: true
-          title: "Slimefun 自动构建版本"
+          make_latest: false
           files: |
             target/${{ env.SLIMEFUN_ARTIFACT_NAME }}
