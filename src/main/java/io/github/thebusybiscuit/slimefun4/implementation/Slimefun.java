@@ -400,6 +400,13 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
             registry.getAllSlimefunItems().size(), registry.getMultiBlocks().size()
         });
 
+        /*
+         * 方块/通用数据必须等物品注册完成后才能从数据库读入:
+         * 读入过程要用 SlimefunItem#getById 解析数据库里记录的物品 id,
+         * 物品还没注册时解析失败, 已存在的方块会被全部跳过 (热重载后所有机器失效即由此产生)。
+         */
+        databaseManager.getBlockDataController().loadInitialData();
+
         logger.log(Level.INFO, "加载研究项目...");
         loadResearches();
 

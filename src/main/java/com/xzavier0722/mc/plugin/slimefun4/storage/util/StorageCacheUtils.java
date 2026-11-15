@@ -276,7 +276,14 @@ public class StorageCacheUtils {
         }
 
         if (hasUniversalBlock(block.getLocation())) {
-            return getUniversalBlock(block).isPendingRemove();
+            var uniData = getUniversalBlock(block);
+
+            /*
+             * hasUniversalBlock 还会读方块 PDC 来判断, 而 getUniversalBlock 只查内存缓存:
+             * 方块数据尚未从数据库读入 (例如刚重载完、区块数据还没加载) 时这里是 null,
+             * 直接解引用会让整个 PlayerInteractEvent 处理中断, 机器看起来就"失效"了。
+             */
+            return uniData != null && uniData.isPendingRemove();
         }
 
         return false;

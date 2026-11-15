@@ -117,13 +117,17 @@ public class BlockDataController extends ADataController {
     public void init(IDataSourceAdapter<?> dataAdapter, int maxReadThread, int maxWriteThread) {
         super.init(dataAdapter, maxReadThread, maxWriteThread);
         this.chunkDataLoadMode = Slimefun.getDatabaseManager().getChunkDataLoadMode();
-        initLoadData();
     }
 
     /**
-     * 初始化加载数据
+     * 加载服务器中已存在方块的初始数据。
+     * <p>
+     * 必须在 Slimefun 物品注册完成之后调用: 读取时需要通过 {@link SlimefunItem#getById(String)}
+     * 把数据库里记录的物品 id 解析为对应的 {@link SlimefunItem}, 解析不到就会被当作"未知物品"直接跳过。
+     * 因此这里一旦调用得过早 (例如在 {@link #init} 里就把任务排进调度器),
+     * 已加载区块中的方块数据会全部被丢弃, 表现为热重载后所有机器失效。
      */
-    private void initLoadData() {
+    public void loadInitialData() {
         switch (chunkDataLoadMode) {
             case LOAD_WITH_CHUNK -> loadLoadedChunks();
             case LOAD_ON_STARTUP -> loadLoadedWorlds();
@@ -156,9 +160,35 @@ public class BlockDataController extends ADataController {
                         Slimefun.instance(),
                         task -> {
                             for (var world : Bukkit.getWorlds()) {
-                                for (var chunk : world.getLoadedChunks()) {
-                                    loadChunk(chunk, false, true);
+                                int scheduled = 0;
+
+                                try {
+                                    for (var chunk : world.getLoadedChunks()) {
+                                        int chunkX = chunk.getX();
+                                        int chunkZ = chunk.getZ();
+                                        scheduled++;
+
+                                        // Folia: 区块数据只能在拥有该区块的线程上读取
+                                        Bukkit.getRegionScheduler()
+                                                .execute(Slimefun.instance(), world, chunkX, chunkZ, () -> {
+                                                    try {
+                                                        loadChunk(world.getChunkAt(chunkX, chunkZ), false, true);
+                                                    } catch (Exception | LinkageError x) {
+                                                        logger.log(
+                                                                Level.SEVERE,
+                                                                x,
+                                                                () -> "加载区块的 Slimefun 数据时出现异常: " + world.getName() + " "
+                                                                        + chunkX + ":" + chunkZ);
+                                                    }
+                                                });
+                                    }
+                                } catch (Exception | LinkageError x) {
+                                    logger.log(Level.WARNING, x, () -> "无法获取世界 " + world.getName() + " 的已加载区块列表");
                                 }
+
+                                logger.log(Level.INFO, "世界 {0}: 已为 {1} 个已加载区块安排 Slimefun 数据加载", new Object[] {
+                                    world.getName(), scheduled
+                                });
                             }
                         },
                         1);
