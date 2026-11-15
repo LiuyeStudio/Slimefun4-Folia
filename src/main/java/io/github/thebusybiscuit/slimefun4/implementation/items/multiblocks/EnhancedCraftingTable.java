@@ -12,6 +12,7 @@ import io.github.thebusybiscuit.slimefun4.implementation.Slimefun;
 import io.github.thebusybiscuit.slimefun4.implementation.items.backpacks.SlimefunBackpack;
 import io.github.thebusybiscuit.slimefun4.utils.SlimefunUtils;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -80,37 +81,51 @@ public class EnhancedCraftingTable extends AbstractCraftingTable {
         Inventory fakeInv = createVirtualInventory(inv);
         Inventory outputInv = findOutputInventory(output, dispenser, inv, fakeInv);
 
-        if (outputInv != null) {
-            SlimefunItem sfItem = SlimefunItem.getByItem(output);
+        if (outputInv == null) {
+            Slimefun.getLocalization().sendMessage(p, "machines.full-inventory", true);
+            return;
+        }
 
-            var waitCallback = false;
-            if (sfItem instanceof SlimefunBackpack backpack) {
-                waitCallback = upgradeBackpack(p, inv, backpack, output, () -> {
-                    SoundEffect.ENHANCED_CRAFTING_TABLE_CRAFT_SOUND.playAt(b);
-                    handleCraftedItem(output, dispenser, inv);
-                });
-            }
+        SlimefunItem sfItem = SlimefunItem.getByItem(output);
+        SlimefunBackpack backpack = sfItem instanceof SlimefunBackpack slimefunBackpack ? slimefunBackpack : null;
 
-            for (int j = 0; j < 9; j++) {
-                ItemStack item = inv.getContents()[j];
+        /*
+         * The backpack has to be looked up before the ingredients are consumed.
+         */
+        ItemStack oldBackpack = backpack == null ? null : findBackpack(inv);
 
-                if (item != null && item.getType() != Material.AIR) {
-                    var consumed =
-                            Slimefun.getItemStackService().consume(item, 1, true, ConsumeContext.VIRTUAL_CRAFTING);
-                    if (consumed.handled()) {
-                        inv.setItem(j, consumed.item());
-                    } else {
-                        ItemUtils.consumeItem(item, true);
-                    }
+        /*
+         * The ingredients are consumed first and the product is only added afterwards.
+         * Upgrading a backpack may complete synchronously (an unbound backpack or one whose
+         * data is already cached), and the product would then be placed into the dispenser
+         * before the removal below runs - which consumes the freshly crafted backpack again.
+         */
+        consumeIngredients(inv);
+
+        Runnable deliver = () -> {
+            SoundEffect.ENHANCED_CRAFTING_TABLE_CRAFT_SOUND.playAt(b);
+            handleCraftedItem(output, dispenser, inv);
+        };
+
+        if (oldBackpack == null || !upgradeBackpack(p, oldBackpack, backpack, output, deliver)) {
+            deliver.run();
+        }
+    }
+
+    private static void consumeIngredients(@Nonnull Inventory inv) {
+        ItemStack[] contents = inv.getContents();
+
+        for (int j = 0; j < 9 && j < contents.length; j++) {
+            ItemStack item = contents[j];
+
+            if (item != null && item.getType() != Material.AIR) {
+                var consumed = Slimefun.getItemStackService().consume(item, 1, true, ConsumeContext.VIRTUAL_CRAFTING);
+                if (consumed.handled()) {
+                    inv.setItem(j, consumed.item());
+                } else {
+                    ItemUtils.consumeItem(item, true);
                 }
             }
-
-            if (!waitCallback) {
-                SoundEffect.ENHANCED_CRAFTING_TABLE_CRAFT_SOUND.playAt(b);
-                handleCraftedItem(output, dispenser, inv);
-            }
-        } else {
-            Slimefun.getLocalization().sendMessage(p, "machines.full-inventory", true);
         }
     }
 
