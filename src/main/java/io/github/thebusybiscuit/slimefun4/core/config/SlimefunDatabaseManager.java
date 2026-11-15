@@ -31,6 +31,7 @@ public class SlimefunDatabaseManager {
     private StorageType blockDataStorageType;
     private IDataSourceAdapter<?> profileAdapter;
     private IDataSourceAdapter<?> blockStorageAdapter;
+    private boolean initialized;
 
     public SlimefunDatabaseManager(Slimefun plugin) {
         this.plugin = plugin;
@@ -49,6 +50,9 @@ public class SlimefunDatabaseManager {
 
     public void init() {
         initDefaultVal();
+
+        boolean blockStorageReady = false;
+        boolean profileReady = false;
 
         try {
             blockDataStorageType = StorageType.valueOf(blockStorageConfig.getString("storageType"));
@@ -74,6 +78,8 @@ public class SlimefunDatabaseManager {
                         blockStorageConfig.getInt("delayedWriting.delayedSecond"),
                         blockStorageConfig.getInt("delayedWriting.forceSavePeriod"));
             }
+
+            blockStorageReady = true;
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "加载 Slimefun 方块存储适配器失败", e);
             return;
@@ -93,9 +99,21 @@ public class SlimefunDatabaseManager {
             initAdapter(profileStorageType, DataType.PLAYER_PROFILE, profileConfig);
             var profileController = ControllerHolder.createController(ProfileDataController.class, profileStorageType);
             profileController.init(profileAdapter, readExecutorThread, writeExecutorThread);
+
+            profileReady = true;
         } catch (IOException e) {
             plugin.getLogger().log(Level.SEVERE, "加载玩家档案适配器失败", e);
         }
+
+        initialized = blockStorageReady && profileReady;
+    }
+
+    /**
+     * @return 数据存储是否初始化成功。初始化失败时 {@link Slimefun} 会中止启动，
+     *         否则会留下一个物品正常但方块数据无法读写的半残状态。
+     */
+    public boolean isInitialized() {
+        return initialized;
     }
 
     private void initAdapter(StorageType storageType, DataType dataType, Config databaseConfig) throws IOException {
@@ -170,6 +188,8 @@ public class SlimefunDatabaseManager {
     }
 
     public void shutdown() {
+        initialized = false;
+
         if (getProfileDataController() != null) {
             getProfileDataController().shutdown();
         }

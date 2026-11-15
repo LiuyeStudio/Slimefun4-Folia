@@ -278,7 +278,18 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
             getServer().getPluginManager().disablePlugin(this);
         } else {
             // The Environment has been validated.
-            onPluginStart();
+            try {
+                onPluginStart();
+            } catch (Exception | LinkageError x) {
+                /*
+                 * 启动过程抛异常时, Bukkit 只会打印堆栈, 插件却仍然停留在 enabled 状态:
+                 * 物品/机器只注册了一半甚至完全没注册, 但服务器看起来一切正常。
+                 * 这里明确禁用插件, 让问题第一时间暴露出来。
+                 */
+                getLogger()
+                        .log(Level.SEVERE, x, () -> "Slimefun 启动失败, 插件将被禁用! 若此前使用 PlugMan 等插件重载过 Slimefun, 请整服重启后再试");
+                getServer().getPluginManager().disablePlugin(this);
+            }
         }
     }
 
@@ -301,6 +312,8 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
     private void onPluginStart() {
         long timestamp = System.nanoTime();
         Logger logger = getLogger();
+
+        warnIfReloadUnsupported(logger);
 
         // Check if CS-CoreLib is installed (it is no longer needed)
         if (getServer().getPluginManager().getPlugin("CS-CoreLib") != null) {
@@ -342,6 +355,12 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
         }
         databaseManager.init();
 
+        if (!databaseManager.isInitialized()) {
+            logger.log(Level.SEVERE, "数据存储初始化失败, Slimefun 无法继续启动! 若此前使用 PlugMan 等插件重载过 Slimefun, 请整服重启后再试");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
+
         // Set up localization
         logger.log(Level.INFO, "正在加载语言文件...");
 
@@ -376,6 +395,10 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
 
         logger.log(Level.INFO, "加载物品...");
         loadItems();
+
+        logger.log(Level.INFO, "物品加载完成: {0} 个 Slimefun 物品, {1} 个多方块结构", new Object[] {
+            registry.getAllSlimefunItems().size(), registry.getMultiBlocks().size()
+        });
 
         logger.log(Level.INFO, "加载研究项目...");
         loadResearches();
@@ -523,7 +546,12 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
             }
         });
 
-        databaseManager.shutdown();
+        try {
+            databaseManager.shutdown();
+        } catch (Exception | LinkageError x) {
+            // 初始化失败 (例如热重载后数据库文件仍被旧实例占用) 时也要保证关闭流程继续执行
+            getLogger().log(Level.SEVERE, "关闭数据存储时出现异常", x);
+        }
 
         // Create a new backup zip
         if (cfgManager.getPluginConfig().getBoolean("options.backup-data")) {
@@ -823,11 +851,43 @@ public final class Slimefun extends JavaPlugin implements SlimefunAddon, ICompat
         try {
             SlimefunItemSetup.setup(this);
         } catch (Exception | LinkageError x) {
+            int registered = registry.getAllSlimefunItems().size();
+
             getLogger()
                     .log(
                             Level.SEVERE,
                             x,
-                            () -> "An Error occurred while initializing SlimefunItems for Slimefun " + getVersion());
+                            () -> "An Error occurred while initializing SlimefunItems for Slimefun " + getVersion()
+                                    + " (已成功注册 " + registered + " 个物品)");
+
+            if (registered == 0) {
+                // 一个物品都没注册就等于没有 Slimefun, 继续运行只会让用户面对一堆"不是 Slimefun 物品"的报错
+                getLogger().log(Level.SEVERE, "没有成功注册任何 Slimefun 物品, 插件将被禁用!");
+                getServer().getPluginManager().disablePlugin(this);
+            }
+        }
+    }
+
+    /**
+     * Slimefun 的全部运行状态 (物品注册表, 多方块机器, 数据库连接池, ticker) 都绑定在插件实例上,
+     * 而 PlugMan 一类的重载插件只会重新执行一次 {@link #onEnable()}, 且 Folia 上旧实例的区域任务
+     * 无法取消, 因此热重载后通常表现为物品/机器没有注册。这里在加载时给出明确提示。
+     *
+     * @param logger
+     *            用于输出提示的 {@link Logger}
+     */
+    private void warnIfReloadUnsupported(@Nonnull Logger logger) {
+        var pluginManager = getServer().getPluginManager();
+
+        for (String name : new String[] {"PlugManX", "PlugMan"}) {
+            if (pluginManager.getPlugin(name) != null) {
+                logger.log(Level.WARNING, "#######################################################");
+                logger.log(Level.WARNING, "检测到重载插件: {0}", name);
+                logger.log(Level.WARNING, "Slimefun 不支持热重载, 请勿对 Slimefun 使用 reload 命令!");
+                logger.log(Level.WARNING, "重载后物品/机器可能无法正确注册, 更换插件版本后请整服重启.");
+                logger.log(Level.WARNING, "#######################################################");
+                return;
+            }
         }
     }
 

@@ -142,6 +142,11 @@ public final class SlimefunExtended {
     }
 
     public static void init(@Nonnull Slimefun sf) {
+        if (migrateListener == null) {
+            // 热重载时 shutdown() 已经把监听器置空, 同一个类加载器上再次 enable 会在这里 NPE
+            migrateListener = new SlimefunMigrateListener();
+        }
+
         EnvironmentChecker.scheduleSlimeGlueCheck(sf);
 
         EnvUtil.init();
